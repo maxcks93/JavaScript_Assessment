@@ -19,7 +19,7 @@ class Field{
 }  
 
     // Generate game map based on user input for map height, map width, and hole percentage across the map
-    static generateField(height, width, percentage){
+    static generateField(height=5, width=5, percentage=0){
         if(height<5){
             height = 5;
         }
@@ -43,11 +43,9 @@ class Field{
         }
 
         //Convert the array to 2D array 
-        const result = new Array(height).fill(null).map(() => []);//declaring a 2D array
-        for(let i=0; i<height; i++){
-            for (let j=0; j<width; j++){
-                result[i][j] = combined[i * width + j];//transfer data from 1D array to 2D array
-            }
+        const result = [];
+        while(combined.length){
+            result.push(combined.splice(0,width))
         }
 
         // Randomly generate the position for the hat
@@ -61,7 +59,7 @@ class Field{
         do {
             pathCharX = Math.floor(Math.random()*width);
             pathCharY = Math.floor(Math.random()*height);
-        } while (pathCharX === hatX && pathCharY === hatY)//repeat to auto generate again if coordinate of initial position overlap with hat position
+        } while (pathCharX === hatX && pathCharY === hatY)//auto generate again if coordinate of initial position overlap with hat position
 
         result[pathCharY][pathCharX] = pathCharacter;
 
@@ -77,23 +75,19 @@ function findInitialPos(array, target){
             return [i, index];//stop executing the function once found the initial position
         }
     }
-    return [-1,-1];//if initial position not found
+    return [-1,-1];
 }
 
-//const userHeight = prompt("Please keyin the height of the maze (minimum of 5): ")
-//const userWidth = prompt("Please keyin the width of the maze (minimum of 5): ")
-//const userPercentage = prompt("Please keyin the percentage of hole for the maze (keyin number only without %)")
-
-
-// Declaration or Generation of game map
-// const gameMap = new Field([[pathCharacter,fieldCharacter,hole],[fieldCharacter,hole,fieldCharacter],[fieldCharacter,hat,fieldCharacter]]);
-const gameMap = new Field(Field.generateField(5,5,20))
+// Collect user input for game map parameters
+const userHeight = prompt("Please keyin the height of the maze (minimum of 5): ")
+const userWidth = prompt("Please keyin the width of the maze (minimum of 5): ")
+const userPercentage = prompt("Please keyin the percentage of hole for the maze (keyin number only without %)")
 
 // Initialisation
+const gameMap = new Field(Field.generateField(userHeight,userWidth,userPercentage))
 gameMap.print(); //display beginning map of the game
 let userInput = null; //initialise user input variable
 let pos = findInitialPos(gameMap._fieldArray, pathCharacter);//capture initial position
-// console.log(`initial position is ${pos}`); //checking
 let gameStart = true;
 
 // u > up, r > right, d > down, l > left
