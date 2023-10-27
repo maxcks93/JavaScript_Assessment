@@ -4,6 +4,7 @@ const hat = '^';
 const hole = 'O';
 const fieldCharacter = '░';
 const pathCharacter = '*';
+let hardMode = false;
 
 // A field class is created
 class Field{
@@ -19,7 +20,7 @@ class Field{
 }  
 
     // Generate game map based on user input for map height, map width, and hole percentage across the map
-    static generateField(height=5, width=5, percentage=0){
+    static generateField(height, width, percentage, modeSelection){
         if(height<5){
             height = 5;
         }
@@ -28,9 +29,12 @@ class Field{
             width = 5;
         }
 
-        const totalMapGrid = height*width;
-        const totalHoles = Math.floor(totalMapGrid*percentage/100);
-        const totalNoneHoles = totalMapGrid - totalHoles;
+        if(modeSelection === 'y' || modeSelection === 'Y'){
+            hardMode = true;
+        }
+
+        const totalHoles = Math.floor(height*width*percentage/100);
+        const totalNoneHoles = height*width - totalHoles;
  
         const holeArray = Array(totalHoles).fill(hole);
         const noneHoleArray = Array(totalNoneHoles).fill(fieldCharacter);
@@ -81,18 +85,23 @@ function findInitialPos(array, target){
 // Collect user input for game map parameters
 const userHeight = prompt("Please keyin the height of the maze (minimum of 5): ")
 const userWidth = prompt("Please keyin the width of the maze (minimum of 5): ")
-const userPercentage = prompt("Please keyin the percentage of hole for the maze (keyin number only without %)")
+const userPercentage = prompt("Please keyin the percentage of hole for the maze (keyin number only without %): ")
+const userHardMode = prompt("Please keyin [Y] to select Hard Mode, keyin anything else for Easy Mode: ")
 
 // Initialisation
-const gameMap = new Field(Field.generateField(userHeight,userWidth,userPercentage))
+const gameMap = new Field(Field.generateField(userHeight,userWidth,userPercentage,userHardMode))
 gameMap.print(); //display beginning map of the game
 let userInput = null; //initialise user input variable
 let pos = findInitialPos(gameMap._fieldArray, pathCharacter);//capture initial position
+let noOfTurns = 0;
 let gameStart = true;
 
 // u > up, r > right, d > down, l > left
 while(gameStart){
     if(userInput){
+        // numbe of turns increment by 1 everytime user input
+        noOfTurns++
+
         //Validate & execute user input
         switch (userInput) {
             case 'u':
@@ -109,8 +118,8 @@ while(gameStart){
                 break;                    
         }
 
-        // Verify if out of bound occurs before proceeding
-        if(pos[0] === -1 || pos[0] === gameMap._fieldArray.length || pos[1] === -1 || pos[1] === gameMap._fieldArray.length){
+        // Verify if out of bound occurs
+        if(pos[0] === -1 || pos[0] === gameMap._fieldArray.length || pos[1] === -1 || pos[1] === gameMap._fieldArray[0].length){
             console.log('Out of bound! You lose!');
             process.exit();
         }
@@ -133,8 +142,23 @@ while(gameStart){
                 break;
         }
 
+        if(hardMode === true && noOfTurns === 5){
+            let newHoleX = 0
+            let newHoleY = 0
+
+            do {
+                newHoleX = Math.floor(Math.random()*gameMap._fieldArray[0].length);
+                newHoleY = Math.floor(Math.random()*gameMap._fieldArray.length);
+            } while (gameMap._fieldArray[newHoleY][newHoleX] !== fieldCharacter);
+
+            gameMap._fieldArray[newHoleY][newHoleX] = hole;
+            noOfTurns = 0;
+            newHoleX = 0;
+            newHoleY = 0;
+        }
+
         userInput = null;// reset user input after execution
-    }
+        }
 
     console.clear();// clear screen
     gameMap.print();// display updated game map
