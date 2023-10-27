@@ -20,7 +20,7 @@ class Field{
 }  
 
     // Generate game map based on user input for map height, map width, and hole percentage across the map
-    static generateField(height, width, percentage, modeSelection){
+    static generateField(height=5, width=5, percentage=0, modeSelection){
         if(height<5){
             height = 5;
         }
@@ -69,10 +69,9 @@ class Field{
 
         return result;
     }
-}
 
-// Declaration of function to trace initial position when game starts
-function findInitialPos(array, target){
+    // To trace initial position when game starts
+    findInitialPos(array, target){
     for(let i=0; i<array.length;i++){
         const index = array[i].findIndex((element)=> element === target);
         if (index !== -1){
@@ -80,23 +79,39 @@ function findInitialPos(array, target){
         }
     }
     return [-1,-1];
+    }
+
+
+    //Randomly generate hole
+    generateHole(){
+        let newHoleX = 0
+        let newHoleY = 0
+
+        do {
+            newHoleX = Math.floor(Math.random()*gameMap._fieldArray[0].length);
+            newHoleY = Math.floor(Math.random()*gameMap._fieldArray.length);
+        } while (gameMap._fieldArray[newHoleY][newHoleX] !== fieldCharacter);//only generate hole at fieldCharacter
+
+        this._fieldArray[newHoleY][newHoleX] = hole;
+    }
 }
 
 // Collect user input for game map parameters
-const userHeight = prompt("Please keyin the height of the maze (minimum of 5): ")
-const userWidth = prompt("Please keyin the width of the maze (minimum of 5): ")
-const userPercentage = prompt("Please keyin the percentage of hole for the maze (keyin number only without %): ")
+console.clear()
+console.log("\n Welcome to the Maze Runner! \n")
+const userHeight = prompt("Please keyin the height of the maze (number with minimum of 5): ")
+const userWidth = prompt("Please keyin the width of the maze (number with minimum of 5): ")
+const userPercentage = prompt("Please keyin the percentage of hole for the maze (number only without %): ")
 const userHardMode = prompt("Please keyin [Y] to select Hard Mode, keyin anything else for Easy Mode: ")
 
 // Initialisation
 const gameMap = new Field(Field.generateField(userHeight,userWidth,userPercentage,userHardMode))
-gameMap.print(); //display beginning map of the game
 let userInput = null; //initialise user input variable
-let pos = findInitialPos(gameMap._fieldArray, pathCharacter);//capture initial position
+let pos = gameMap.findInitialPos(gameMap._fieldArray, pathCharacter);//capture initial position
 let noOfTurns = 0;
 let gameStart = true;
 
-// u > up, r > right, d > down, l > left
+// u > up, r > right, d > down, l > left, q to leave game
 while(gameStart){
     if(userInput){
         // numbe of turns increment by 1 everytime user input
@@ -115,7 +130,10 @@ while(gameStart){
                 break;
             case 'l':
                 pos[1] -= 1;
-                break;                    
+                break;
+            case 'q':
+                console.log("Thanks for playing, good bye!")
+                process.exit();                    
         }
 
         // Verify if out of bound occurs
@@ -142,19 +160,10 @@ while(gameStart){
                 break;
         }
 
+        //hard mode is active, randomly generate hole every 5 turns
         if(hardMode === true && noOfTurns === 5){
-            let newHoleX = 0
-            let newHoleY = 0
-
-            do {
-                newHoleX = Math.floor(Math.random()*gameMap._fieldArray[0].length);
-                newHoleY = Math.floor(Math.random()*gameMap._fieldArray.length);
-            } while (gameMap._fieldArray[newHoleY][newHoleX] !== fieldCharacter);
-
-            gameMap._fieldArray[newHoleY][newHoleX] = hole;
-            noOfTurns = 0;
-            newHoleX = 0;
-            newHoleY = 0;
+            gameMap.generateHole();
+            noOfTurns = 0;//reset
         }
 
         userInput = null;// reset user input after execution
@@ -165,6 +174,7 @@ while(gameStart){
 
     //Obtain user input
     while(!userInput){
+        console.log('(u)p, (d)own, (l)eft, (r)ight, (q)uit')
         userInput = prompt("Which way?");
         userInput = userInput.toLowerCase();
     }   
