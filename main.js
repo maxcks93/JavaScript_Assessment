@@ -6,6 +6,21 @@ const fieldCharacter = '░';
 const pathCharacter = '*';
 let hardMode = false;
 
+const reset = "\x1b[0m";
+
+// Print message in color
+const log = {
+    green: (text) => console.log("\x1b[32m" + text + reset),
+    red: (text) => console.log("\x1b[31m" + text + reset),
+};
+
+// game progress constant
+const WIN = 1;
+const LOSE = 2;
+const OUTOFBOUNDS = 3;
+const REDFLAG = 0;
+const GREENFLAG = 1;
+
 // A field class is created
 class Field{
     constructor(fieldArray){
@@ -17,7 +32,7 @@ class Field{
         for (let i=0; i<this._fieldArray.length;i++) {
           console.log(this._fieldArray[i].join(' ') + '\n');
         }
-}  
+    }  
 
     // Generate game map based on user input for map height, map width, and hole percentage across the map
     static generateField(height=5, width=5, percentage=0, modeSelection){
@@ -94,6 +109,20 @@ class Field{
 
         this._fieldArray[newHoleY][newHoleX] = hole;
     }
+
+    // Print out the status of the game
+    gameStatus(msg, flag){
+        switch (flag) {
+            case GREENFLAG:
+                log.green(msg);
+                break;
+        
+            default:
+                log.red(msg);
+                break;
+        }
+        process.exit();
+    }
 }
 
 // Collect user input for game map parameters
@@ -138,8 +167,7 @@ while(gameStart){
 
         // Verify if out of bound occurs
         if(pos[0] === -1 || pos[0] === gameMap._fieldArray.length || pos[1] === -1 || pos[1] === gameMap._fieldArray[0].length){
-            console.log('Out of bound! You lose!');
-            process.exit();
+            gameMap.gameStatus('Out of bound! You lose!', REDFLAG);
         }
 
         //Capture new position after user keyin the input
@@ -148,12 +176,10 @@ while(gameStart){
         //Validate & execute based on new position
         switch (currentPos) {
             case hat:
-                console.log("Congrats, you found your hat!");
-                process.exit()
+                gameMap.gameStatus('Congrats, you found your hat!', GREENFLAG);
                 break;
             case hole:
-                console.log("You fell to the hole! You lose!");
-                process.exit()
+                gameMap.gameStatus('You fell to the hole! You lose', REDFLAG);
                 break;
             case fieldCharacter:
                 gameMap._fieldArray[pos[0]][pos[1]] = pathCharacter;
